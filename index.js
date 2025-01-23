@@ -4,6 +4,7 @@ const dotenv = require('dotenv');
 const bodyParser = require('body-parser');
 const adminRoutes = require('./routes/adminRoutes');
 const carRoutes = require('./routes/carRoutes');
+const cors = require('cors');
 
 dotenv.config();
 
@@ -13,6 +14,7 @@ const PORT = process.env.PORT || 5001;
 
 app.use(express.json());
 app.use(bodyParser.urlencoded({ extended: true }));
+app.use(cors());
 
 app.get('/', (req, res) => {
   res.send('Hello Automobile enthusiasts!');
