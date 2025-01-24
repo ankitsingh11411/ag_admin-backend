@@ -2,7 +2,25 @@ const Car = require('../models/Car');
 
 const addCar = async (req, res) => {
   try {
-    const car = new Car(req.body);
+    const { files, body } = req;
+    const images = files.images?.map((file) => file.path) || [];
+    const sounds = {
+      rev: files.rev?.[0]?.path || null,
+      flyby: files.flyby?.[0]?.path || null,
+      launchControl: files.launchControl?.[0]?.path || null,
+    };
+
+    const carData = {
+      ...body,
+      topSpeed: {
+        value: body.topSpeedValue,
+        unit: body.topSpeedUnit,
+      },
+      images,
+      sounds,
+    };
+
+    const car = new Car(carData);
     const savedCar = await car.save();
     res.status(201).json(savedCar);
   } catch (error) {
