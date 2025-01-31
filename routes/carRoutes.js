@@ -5,15 +5,14 @@ const {
   updateCar,
   deleteCar,
 } = require('../controllers/carController');
-const { authenticate } = require('../middlewares/authMiddleware');
+const authMiddleware = require('../middlewares/authMiddleware');
 const upload = require('../middlewares/upload');
 
 const router = express.Router();
 
-router.use(authenticate);
-
 router.post(
   '/',
+  authMiddleware,
   upload.fields([
     { name: 'images', maxCount: 5 },
     { name: 'rev', maxCount: 1 },
@@ -22,8 +21,8 @@ router.post(
   ]),
   addCar
 );
+router.put('/:id', authMiddleware, updateCar);
+router.delete('/:id', authMiddleware, deleteCar);
 router.get('/', getAllCars);
-router.put('/:id', updateCar);
-router.delete('/:id', deleteCar);
 
 module.exports = router;

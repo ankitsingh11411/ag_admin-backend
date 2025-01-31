@@ -1,35 +1,44 @@
+const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const Admin = require('../models/Admin');
 
-const dotenv = require('dotenv');
+const registerAdmin = async (req, res) => {
+  try {
+    const { username, password } = req.body;
 
-dotenv.config();
+    const existingAdmin = await Admin.findOne({ username });
+    if (existingAdmin)
+      return res.status(400).json({ message: 'Admin already exists' });
 
-const admins = [
-  {
-    username: process.env.ADMIN1_USERNAME,
-    password: process.env.ADMIN1_PASSWORD,
-  },
-  {
-    username: process.env.ADMIN2_USERNAME,
-    password: process.env.ADMIN2_PASSWORD,
-  },
-];
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const newAdmin = new Admin({ username, password: hashedPassword });
 
-const login = (req, res) => {
-  const { username, password } = req.body;
-
-  const admin = admins.find(
-    (admin) => admin.username === username && admin.password === password
-  );
-
-  if (!admin) {
-    return res.status(401).json({ message: 'Invalid credentials' });
+    await newAdmin.save();
+    res.status(201).json({ message: 'Admin registered successfully' });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error' });
   }
-
-  const token = jwt.sign({ username }, process.env.JWT_SECRET, {
-    expiresIn: '1h',
-  });
-  res.status(200).json({ message: 'Login successful', token });
 };
 
-module.exports = { login };
+const loginAdmin = async (req, res) => {
+  try {
+    const { username, password } = req.body;
+
+    const admin = await Admin.findOne({ username });
+    if (!admin) return res.status(400).json({ message: 'Invalid credentials' });
+
+    const isMatch = await bcrypt.compare(password, admin.password);
+    if (!isMatch)
+      return res.status(400).json({ message: 'Invalid credentials' });
+
+    const token = jwt.sign({ id: admin._id }, process.env.JWT_SECRET, {
+      expiresIn: '1h',
+    });
+
+    res.status(200).json({ token, message: 'Login successful' });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+module.exports = { registerAdmin, loginAdmin };

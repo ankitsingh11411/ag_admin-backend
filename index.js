@@ -2,8 +2,8 @@ const express = require('express');
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 const bodyParser = require('body-parser');
-const adminRoutes = require('./routes/adminRoutes');
-const carRoutes = require('./routes/carRoutes');
+const adminRoutes = require('./routes/AdminRoutes.js');
+const carRoutes = require('./routes/carRoutes.js');
 const cors = require('cors');
 
 dotenv.config();
@@ -22,6 +22,7 @@ app.get('/', (req, res) => {
 
 app.use('/api/admin', adminRoutes);
 app.use('/api/cars', carRoutes);
+app.use('/uploads', express.static('uploads'));
 
 mongoose
   .connect(MONGO_URI)
